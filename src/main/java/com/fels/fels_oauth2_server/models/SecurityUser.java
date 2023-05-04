@@ -1,31 +1,41 @@
 package com.fels.fels_oauth2_server.models;
 
-import com.fels.fels_oauth2_server.entities.UserDetail;
+import com.fels.fels_oauth2_server.entities.User;
+import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.stream.Collectors;
 
+@Transactional
 public class SecurityUser implements UserDetails {
-    private final UserDetail userDetail;
+    private final User user;
+    private Logger logger = LoggerFactory.getLogger(SecurityUser.class);
 
-    public SecurityUser(UserDetail userDetail) {
-        this.userDetail = userDetail;
+    public SecurityUser(User user) {
+        this.user = user;
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return null;
+        return user.getUserDetails()
+                .stream()
+                .map(a -> new SimpleGrantedAuthority(a.getAuthority().getName()))
+                .collect(Collectors.toList());
     }
 
     @Override
     public String getPassword() {
-        return userDetail.getUser().getPassword();
+        return user.getPassword();
     }
 
     @Override
     public String getUsername() {
-        return userDetail.getUser().getUsername();
+        return user.getUsername();
     }
 
     @Override
