@@ -24,7 +24,15 @@ public class Client {
     private String clientId;
     @Column(nullable = false)
     private String secret;
-    @OneToMany(mappedBy = "client",cascade = CascadeType.ALL)
+    @Column(nullable = false)
+    private int accessTokenTimeToLive = 30;
+    private int refreshTokenTimeToLive = 86400;
+    private int reUseRefreshToken = 0;
+    @OneToMany(mappedBy = "client",cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<ClientDetail> clientDetails = new HashSet<>();
 
+    public Client(String clientId, String secret) {
+        this.clientId = clientId;
+        this.secret = secret;
+    }
 }
