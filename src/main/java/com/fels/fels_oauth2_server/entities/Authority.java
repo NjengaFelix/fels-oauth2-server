@@ -24,4 +24,9 @@ public class Authority {
     private String description;
     @OneToMany(mappedBy = "authority",cascade = CascadeType.ALL)
     private Set<UserDetail> userDetails = new HashSet<>();
+
+    public Authority(String name, String description) {
+        this.name = name;
+        this.description = description;
+    }
 }
