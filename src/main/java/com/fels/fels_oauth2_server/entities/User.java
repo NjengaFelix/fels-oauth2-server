@@ -32,6 +32,18 @@ public class User {
     private PasswordAlgorithm passwordAlgorithm;
     @Column(nullable = false)
     private String password;
-    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
     private Set<UserDetail> userDetails = new HashSet<>();
+
+    public User(String firstName, String lastName, String dob, String address, String country, String photo, String username, PasswordAlgorithm passwordAlgorithm, String password) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.dob = dob;
+        this.address = address;
+        this.country = country;
+        this.photo = photo;
+        this.username = username;
+        this.passwordAlgorithm = passwordAlgorithm;
+        this.password = password;
+    }
 }
