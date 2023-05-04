@@ -11,6 +11,14 @@ import lombok.Setter;
 @Setter
 @Table(name = "client_details")
 public class ClientDetail {
+    public ClientDetail(Client client, AuthMethod authMethod, Scope scope, Uri uri, GrantType grantType) {
+        this.client = client;
+        this.authMethod = authMethod;
+        this.scope = scope;
+        this.uri = uri;
+        this.grantType = grantType;
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
