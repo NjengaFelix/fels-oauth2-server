@@ -20,4 +20,9 @@ public class UserDetail {
     @ManyToOne
     @JoinColumn(name = "authority_id",referencedColumnName = "id",nullable = false)
     private Authority authority;
+
+    public UserDetail(User user, Authority authority) {
+        this.user = user;
+        this.authority = authority;
+    }
 }
