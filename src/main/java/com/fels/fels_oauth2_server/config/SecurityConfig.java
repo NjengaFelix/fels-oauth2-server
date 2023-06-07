@@ -1,5 +1,7 @@
 package com.fels.fels_oauth2_server.config;
 
+import com.fels.fels_oauth2_server.federation.FederatedIdentityAuthenticationSuccessHandler;
+import com.fels.fels_oauth2_server.federation.FederatedIdentityIdTokenCustomizer;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
@@ -11,6 +13,8 @@ import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
@@ -19,8 +23,10 @@ import org.springframework.security.oauth2.server.authorization.settings.Authori
 import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.session.HttpSessionEventPublisher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -38,10 +44,8 @@ public class SecurityConfig {
     public SecurityFilterChain asSecurityChain(HttpSecurity http) throws Exception {
         //Setting up the authorizationServer
         OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
-        http
-                .getConfigurer(OAuth2AuthorizationServerConfigurer.class)
+        http.getConfigurer(OAuth2AuthorizationServerConfigurer.class)
                 .oidc(Customizer.withDefaults());
-
         http
                 .cors().and().csrf().disable()
                 .exceptionHandling(
@@ -52,22 +56,38 @@ public class SecurityConfig {
         return http.build();
     }
 
+
     @Bean
     @Order(2)
     public SecurityFilterChain appSecurityChain(HttpSecurity http) throws Exception {
         //Setting up a formLogin page
         http
                 .cors().and().csrf().disable()
-                .formLogin()
-                .and()
-                .authorizeHttpRequests().anyRequest().authenticated();
+                .authorizeHttpRequests(authorize ->
+                        authorize
+                                .requestMatchers("/assets/**", "/webjars/**", "/login").permitAll()
+                                .anyRequest().authenticated()
+                )
+                .formLogin(formLogin ->
+                        formLogin
+                                .loginPage("/login")
+                        )
+                .oauth2Login(oauth2Login ->
+                        oauth2Login
+                                .loginPage("/login")
+                                .successHandler(authenticationSuccessHandler())
+                );
         return http.build();
+    }
+
+    private AuthenticationSuccessHandler authenticationSuccessHandler() {
+        return new FederatedIdentityAuthenticationSuccessHandler();
     }
 
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://127.0.0.1:5173"));
+        configuration.setAllowedOrigins(Arrays.asList("http://127.0.0.1:5173","https://airtimevending.co.ke"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
@@ -109,7 +129,7 @@ public class SecurityConfig {
 
     @Bean
     public OAuth2TokenCustomizer<JwtEncodingContext> oAuth2TokenCustomizer() {
-        return  context -> {
+        /*return  context -> {
             //You can add a unique claim
             //context.getClaims().claim("test", "test");
 
@@ -117,6 +137,7 @@ public class SecurityConfig {
 
             //Adding of authorities to the token
             context.getClaims().claim("authorities", authorities.stream().map(a -> a.getAuthority()).toList()); // List<String>
-        };
+        };*/
+        return new FederatedIdentityIdTokenCustomizer();
     }
 }
