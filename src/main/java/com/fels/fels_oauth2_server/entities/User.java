@@ -27,15 +27,11 @@ public class User {
     private String photo;
     @Column(nullable = false)
     private String username;
-    @ManyToOne
-    @JoinColumn(name = "password_algorithm_id",referencedColumnName = "id",nullable = false)
-    private PasswordAlgorithm passwordAlgorithm;
-    @Column(nullable = false)
     private String password;
     @OneToMany(mappedBy = "user",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
     private Set<UserDetail> userDetails = new HashSet<>();
 
-    public User(String firstName, String lastName, String dob, String address, String country, String photo, String username, PasswordAlgorithm passwordAlgorithm, String password) {
+    public User(String firstName, String lastName, String dob, String address, String country, String photo, String username, String password) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.dob = dob;
@@ -43,7 +39,6 @@ public class User {
         this.country = country;
         this.photo = photo;
         this.username = username;
-        this.passwordAlgorithm = passwordAlgorithm;
         this.password = password;
     }
 }
